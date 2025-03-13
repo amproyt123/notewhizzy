@@ -21,10 +21,19 @@ export default {
 		extend: {
 			fontFamily: {
 				sans: [
+					'Inter',
+					'SF Pro Display',
+					'SF Pro Text',
 					'-apple-system', 
 					'BlinkMacSystemFont', 
-					'San Francisco', 
+					'system-ui',
 					'Helvetica Neue', 
+					'sans-serif'
+				],
+				heading: [
+					'SF Pro Display',
+					'Inter',
+					'system-ui',
 					'sans-serif'
 				],
 			},
