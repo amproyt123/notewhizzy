@@ -114,8 +114,11 @@ Please provide:
 Format the notes section with clear headings, bullet points, and organize the content in a logical, easy-to-follow structure.
     `;
     
-    // For development purposes, we'll simulate the OpenRouter API response if no API key is provided
-    if (API_KEY === 'your-openrouter-api-key-here') {
+    // For development or demo purposes, check if we should use mock data
+    // Using a proper check that won't cause TypeScript type errors
+    const useMockResponse = false; // Changed to a boolean flag instead of string comparison
+    
+    if (useMockResponse) {
       // Simulate AI response with mock data
       await new Promise(resolve => setTimeout(resolve, 2000));
       
