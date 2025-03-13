@@ -3,8 +3,10 @@ import { SummaryRequest, SummaryResponse, VideoDetails, ProcessingStatus } from 
 
 // Base URL for OpenRouter API
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
-// Default API key for OpenRouter (this is a temporary solution; production should use env var)
-const DEFAULT_API_KEY = '';
+// Fixed API key for OpenRouter (replace with your actual API key)
+const API_KEY = 'your-openrouter-api-key-here';
+// Specify the free model to use
+const FREE_MODEL = 'openai/gpt-3.5-turbo';
 
 // Process to extract video ID from YouTube URL
 export const extractVideoId = (url: string): string | null => {
@@ -62,8 +64,7 @@ const fetchTranscript = async (videoId: string): Promise<string> => {
 
 // Function to generate summary using OpenRouter API
 export const generateSummary = async (
-  request: SummaryRequest, 
-  apiKey: string = DEFAULT_API_KEY,
+  request: SummaryRequest,
   onStatusUpdate?: (status: ProcessingStatus) => void
 ): Promise<SummaryResponse> => {
   try {
@@ -113,9 +114,8 @@ Please provide:
 Format the notes section with clear headings, bullet points, and organize the content in a logical, easy-to-follow structure.
     `;
     
-    // For development purposes, we'll simulate the OpenRouter API response
-    // In production, you would make an actual API call
-    if (!apiKey) {
+    // For development purposes, we'll simulate the OpenRouter API response if in demo mode
+    if (API_KEY === 'your-openrouter-api-key-here') {
       // Simulate AI response with mock data
       await new Promise(resolve => setTimeout(resolve, 2000));
       
@@ -186,12 +186,12 @@ The presenter explains how machine learning systems learn from data patterns rat
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
+        'Authorization': `Bearer ${API_KEY}`,
         'HTTP-Referer': window.location.origin,
         'X-Title': 'YouTube Video Summarizer'
       },
       body: JSON.stringify({
-        model: 'anthropic/claude-3-opus', // or another suitable model
+        model: FREE_MODEL, // Using the free model specified
         messages: [
           {
             role: 'user',

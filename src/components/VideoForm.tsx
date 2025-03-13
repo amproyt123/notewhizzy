@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -23,7 +22,6 @@ const VideoForm: React.FC<VideoFormProps> = ({ className, onResult }) => {
   const [progress, setProgress] = useState(0);
   const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [apiKey, setApiKey] = useState('');
   const progressTimerRef = useRef<NodeJS.Timeout | null>(null);
   const { toast } = useToast();
 
@@ -72,7 +70,7 @@ const VideoForm: React.FC<VideoFormProps> = ({ className, onResult }) => {
         detailLevel
       };
       
-      const result = await generateSummary(request, apiKey, (newStatus) => {
+      const result = await generateSummary(request, (newStatus) => {
         setStatus(newStatus);
         
         // Update progress based on status
@@ -241,24 +239,6 @@ const VideoForm: React.FC<VideoFormProps> = ({ className, onResult }) => {
                 <Label htmlFor="comprehensive" className="cursor-pointer">Comprehensive</Label>
               </div>
             </RadioGroup>
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="api-key" className="text-sm font-medium">
-              OpenRouter API Key (Optional)
-            </Label>
-            <Input
-              id="api-key"
-              type="password"
-              placeholder="Enter your OpenRouter API key"
-              value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
-              className="transition-all duration-300 focus:ring-2 focus:ring-primary/70"
-              disabled={isProcessing}
-            />
-            <p className="text-xs text-gray-500">
-              Leave empty to use demo mode (simulated results)
-            </p>
           </div>
           
           {isProcessing && (
