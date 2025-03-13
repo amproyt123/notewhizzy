@@ -3,10 +3,10 @@ import { SummaryRequest, SummaryResponse, VideoDetails, ProcessingStatus } from 
 
 // Base URL for OpenRouter API
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
-// Fixed API key for OpenRouter (replace with your actual API key)
-const API_KEY = 'your-openrouter-api-key-here';
+// Fixed API key for OpenRouter
+const API_KEY = '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';
 // Specify the free model to use
-const FREE_MODEL = 'openai/gpt-3.5-turbo';
+const FREE_MODEL = 'google/gemma-3-27b-it:free';
 
 // Process to extract video ID from YouTube URL
 export const extractVideoId = (url: string): string | null => {
@@ -114,7 +114,7 @@ Please provide:
 Format the notes section with clear headings, bullet points, and organize the content in a logical, easy-to-follow structure.
     `;
     
-    // For development purposes, we'll simulate the OpenRouter API response if in demo mode
+    // For development purposes, we'll simulate the OpenRouter API response if no API key is provided
     if (API_KEY === 'your-openrouter-api-key-here') {
       // Simulate AI response with mock data
       await new Promise(resolve => setTimeout(resolve, 2000));
