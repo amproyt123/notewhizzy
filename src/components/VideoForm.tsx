@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -7,22 +8,27 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import AnimatedTransition from './AnimatedTransition';
 import { extractVideoId, generateSummary } from '@/utils/openRouterService';
 import { ProcessingStatus, SummaryRequest, SummaryResponse } from '@/types';
-import { CheckCircle, Loader2, AlertTriangle } from 'lucide-react';
+import { CheckCircle, Loader2, AlertTriangle, Coffee } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 
 interface VideoFormProps {
   className?: string;
   onResult: (result: SummaryResponse) => void;
+  processType: 'concise' | 'detailed';
 }
 
-const VideoForm: React.FC<VideoFormProps> = ({ className, onResult }) => {
+const VideoForm: React.FC<VideoFormProps> = ({ className, onResult, processType }) => {
   const [videoUrl, setVideoUrl] = useState('');
-  const [detailLevel, setDetailLevel] = useState<'concise' | 'detailed' | 'comprehensive'>('detailed');
+  const [detailLevel, setDetailLevel] = useState<'concise' | 'detailed' | 'comprehensive'>(
+    processType === 'concise' ? 'concise' : 'detailed'
+  );
   const [status, setStatus] = useState<ProcessingStatus>(ProcessingStatus.IDLE);
   const [progress, setProgress] = useState(0);
   const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [showCoffeeMessage, setShowCoffeeMessage] = useState(false);
   const progressTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const coffeeTimerRef = useRef<NodeJS.Timeout | null>(null);
   const { toast } = useToast();
 
   // Handle URL input change
@@ -43,6 +49,7 @@ const VideoForm: React.FC<VideoFormProps> = ({ className, onResult }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setShowCoffeeMessage(false);
     
     // Validate URL
     const videoId = extractVideoId(videoUrl);
@@ -63,6 +70,11 @@ const VideoForm: React.FC<VideoFormProps> = ({ className, onResult }) => {
     // Start progress simulation
     startProgressSimulation();
     
+    // Show coffee message after 5 seconds
+    coffeeTimerRef.current = setTimeout(() => {
+      setShowCoffeeMessage(true);
+    }, 5000);
+    
     try {
       // Process the video
       const request: SummaryRequest = {
@@ -82,15 +94,21 @@ const VideoForm: React.FC<VideoFormProps> = ({ className, onResult }) => {
         if (newStatus === ProcessingStatus.COMPLETED) setProgress(100);
       });
       
-      // Clean up progress timer
+      // Clean up timers
       if (progressTimerRef.current) {
         clearInterval(progressTimerRef.current);
         progressTimerRef.current = null;
       }
       
+      if (coffeeTimerRef.current) {
+        clearTimeout(coffeeTimerRef.current);
+        coffeeTimerRef.current = null;
+      }
+      
       // Set final progress and pass result to parent
       setProgress(100);
       setStatus(ProcessingStatus.COMPLETED);
+      setShowCoffeeMessage(false);
       onResult(result);
       
       // Reset form after successful processing
@@ -113,11 +131,18 @@ const VideoForm: React.FC<VideoFormProps> = ({ className, onResult }) => {
         description: error instanceof Error ? error.message : 'An unexpected error occurred',
       });
       
-      // Clean up progress timer
+      // Clean up timers
       if (progressTimerRef.current) {
         clearInterval(progressTimerRef.current);
         progressTimerRef.current = null;
       }
+      
+      if (coffeeTimerRef.current) {
+        clearTimeout(coffeeTimerRef.current);
+        coffeeTimerRef.current = null;
+      }
+      
+      setShowCoffeeMessage(false);
     }
   };
   
@@ -150,6 +175,9 @@ const VideoForm: React.FC<VideoFormProps> = ({ className, onResult }) => {
       if (progressTimerRef.current) {
         clearInterval(progressTimerRef.current);
       }
+      if (coffeeTimerRef.current) {
+        clearTimeout(coffeeTimerRef.current);
+      }
     };
   }, []);
   
@@ -167,9 +195,15 @@ const VideoForm: React.FC<VideoFormProps> = ({ className, onResult }) => {
     [ProcessingStatus.ERROR]: 'An error occurred'
   };
 
+  // Get form title based on process type
+  const getFormTitle = () => {
+    return processType === 'concise' ? 'Generate Quick Summary' : 'Create Detailed Notes';
+  };
+
   return (
     <div className={cn('w-full max-w-md mx-auto', className)}>
       <div className="glass-panel rounded-2xl p-6 transition-all duration-300">
+        <h3 className="text-lg font-medium mb-4 text-center">{getFormTitle()}</h3>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="video-url" className="text-sm font-medium">
@@ -216,30 +250,28 @@ const VideoForm: React.FC<VideoFormProps> = ({ className, onResult }) => {
             </AnimatedTransition>
           )}
           
-          <div className="space-y-2">
-            <Label htmlFor="detail-level" className="text-sm font-medium">
-              Detail Level
-            </Label>
-            <RadioGroup 
-              value={detailLevel} 
-              onValueChange={(value) => setDetailLevel(value as any)} 
-              className="flex flex-col space-y-2"
-              disabled={isProcessing}
-            >
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="concise" id="concise" />
-                <Label htmlFor="concise" className="cursor-pointer">Concise</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="detailed" id="detailed" />
-                <Label htmlFor="detailed" className="cursor-pointer">Detailed</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="comprehensive" id="comprehensive" />
-                <Label htmlFor="comprehensive" className="cursor-pointer">Comprehensive</Label>
-              </div>
-            </RadioGroup>
-          </div>
+          {processType === 'detailed' && (
+            <div className="space-y-2">
+              <Label htmlFor="detail-level" className="text-sm font-medium">
+                Detail Level
+              </Label>
+              <RadioGroup 
+                value={detailLevel} 
+                onValueChange={(value) => setDetailLevel(value as any)} 
+                className="flex flex-col space-y-2"
+                disabled={isProcessing}
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="detailed" id="detailed" />
+                  <Label htmlFor="detailed" className="cursor-pointer">Standard</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="comprehensive" id="comprehensive" />
+                  <Label htmlFor="comprehensive" className="cursor-pointer">Comprehensive</Label>
+                </div>
+              </RadioGroup>
+            </div>
+          )}
           
           {isProcessing && (
             <div className="space-y-2 mt-4">
@@ -252,6 +284,19 @@ const VideoForm: React.FC<VideoFormProps> = ({ className, onResult }) => {
               <p className="text-sm text-center text-gray-600">
                 {statusMessages[status]} ({Math.round(progress)}%)
               </p>
+              
+              {showCoffeeMessage && (
+                <AnimatedTransition 
+                  show={true}
+                  animationType="fade"
+                  className="bg-amber-50 border border-amber-200 rounded-md p-3 mt-3 flex items-center gap-2"
+                >
+                  <Coffee className="h-4 w-4 text-amber-600" />
+                  <p className="text-sm text-amber-800">
+                    It will take 2-3 mins, go grab a coffee!
+                  </p>
+                </AnimatedTransition>
+              )}
             </div>
           )}
           
@@ -269,7 +314,7 @@ const VideoForm: React.FC<VideoFormProps> = ({ className, onResult }) => {
               ? 'Processing...' 
               : status === ProcessingStatus.COMPLETED 
                 ? 'Done!' 
-                : 'Generate Notes'
+                : processType === 'concise' ? 'Generate Summary' : 'Generate Notes'
             }
           </Button>
         </form>

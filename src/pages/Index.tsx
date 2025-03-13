@@ -4,9 +4,12 @@ import { SummaryResponse } from '@/types';
 import Hero from '@/components/Hero';
 import VideoForm from '@/components/VideoForm';
 import SummaryResult from '@/components/SummaryResult';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { FileText, BookOpen } from 'lucide-react';
 
 const Index: React.FC = () => {
   const [result, setResult] = useState<SummaryResponse | null>(null);
+  const [activeTab, setActiveTab] = useState<'notes' | 'summary'>('notes');
   
   const handleResult = (newResult: SummaryResponse) => {
     setResult(newResult);
@@ -68,14 +71,48 @@ const Index: React.FC = () => {
                   Simple Process
                 </div>
                 <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">
-                  Start Generating Notes
+                  Generate from YouTube Videos
                 </h2>
                 <p className="mx-auto max-w-[700px] text-gray-500 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed dark:text-gray-400">
                   Just paste your YouTube video URL and let our AI do the rest
                 </p>
               </div>
               
-              <VideoForm onResult={handleResult} className="mt-8" />
+              <div className="w-full max-w-md mx-auto">
+                <Tabs 
+                  defaultValue="notes" 
+                  value={activeTab}
+                  onValueChange={(value) => setActiveTab(value as 'notes' | 'summary')}
+                  className="w-full"
+                >
+                  <TabsList className="grid w-full grid-cols-2 mb-8">
+                    <TabsTrigger value="notes" className="flex items-center gap-2">
+                      <FileText className="h-4 w-4" />
+                      Create Notes
+                    </TabsTrigger>
+                    <TabsTrigger value="summary" className="flex items-center gap-2">
+                      <BookOpen className="h-4 w-4" />
+                      Create Summary
+                    </TabsTrigger>
+                  </TabsList>
+                  
+                  <TabsContent value="notes">
+                    <VideoForm 
+                      onResult={handleResult} 
+                      processType="detailed" 
+                      className="mt-4" 
+                    />
+                  </TabsContent>
+                  
+                  <TabsContent value="summary">
+                    <VideoForm 
+                      onResult={handleResult} 
+                      processType="concise" 
+                      className="mt-4" 
+                    />
+                  </TabsContent>
+                </Tabs>
+              </div>
             </div>
           </div>
         </section>
